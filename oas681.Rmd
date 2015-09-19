@@ -1,0 +1,72 @@
+---
+title: "AOS 8.6.1"
+author: "monade"
+date: "15 Sep 2015"
+output: html_document
+---
+
+The Data
+```{r}
+lsat <- c(576,635,558,578,666,580,555,661,651,605,653,575,545,572,594)
+gpa <- c(3.39,3.30,2.81,3.03,3.44,3.07,3.00,3.43,3.36,3.13,3.12,2.74,2.76,2.88,3.96)
+plot(lsat,gpa)
+```
+
+Drop outlier (last value)
+```{r}
+lsat <- lsat[-length(lsat)]
+gpa <- gpa[-length(gpa)]
+plot(lsat,gpa)
+```
+
+Theta hat
+```{r}
+cor <- function(a, b)
+{
+  ma <- mean( a )
+  mb <- mean( b )
+  p <- sum((a-ma)*(b-mb))
+  q <- sum((a-ma)^2)*sum((b-mb)^2)
+  p/sqrt(q)  
+}
+cor_hat <- cor( lsat, gpa )
+cor_hat
+```
+
+Bootstrap for variance estimation
+```{r}
+B <- 1000 # sample size
+n <- length(lsat)
+boot <- vector( length = B )
+for (i in 1:B)
+{
+  s <- sample.int(n, n, replace=TRUE)
+  boot[i] <- cor( lsat[s], gpa[s] )
+}
+mvb <- mean(boot)
+se_hat <- sqrt(sum((boot-mvb)^2)/B)
+se_hat
+```
+
+Confidence interval parameter
+```{r}
+alpha <- 1-0.95
+f <- qnorm(1-alpha/2)
+```
+
+Normal confidence interval
+```{r}
+cor_hat + c(-1,1)*f*se_hat
+```
+
+Pivotal confidence interval
+```{r}
+qs <- quantile(boot, c(1-alpha/2, alpha/2), names=FALSE)
+2*cor_hat - qs
+```
+
+Percentile confidence interval
+```{r}
+c(qs[2], qs[1])
+```
+
