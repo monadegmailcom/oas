@@ -1,0 +1,64 @@
+---
+title: "AOS Exercise 8.6.6"
+author: "monade"
+date: "4 Oct 2015"
+output: html_document
+---
+
+Let $X_1,.., X_n \sim unif(\mu, 1)$, $\theta = e^X$ and 
+$\hat{\theta} = e^\bar{X}$
+
+Create data set
+```{r}
+set.seed(42)
+mu <- 5
+n <- 100
+xi <- rnorm(n, mu, 1)
+```
+
+Point estimator
+```{r}
+theta_hat <- exp(mean(xi))
+theta_hat
+```
+
+Bootstrap
+```{r}
+B <- 10000
+boot <- rep(0, B)
+for (i in 1:B)
+{
+  s <- sample(xi, n, replace=TRUE)
+  boot[i] <- exp(mean(s))
+}
+```
+
+Standard error
+```{r}
+se <- sqrt(var(boot))
+se
+```
+
+Confidence alpha
+```{r}
+alpha <- 1 - 0.95
+```
+
+Normal based confidence interval
+```{r}
+theta_hat + c(-1,1)*se*qnorm(1-alpha/2)
+```
+
+Bootstrap confidence interval
+```{r}
+ci <- quantile(boot, c(alpha/2, 1-alpha/2))
+ci
+```
+
+Bootstrap histogram
+```{r}
+hist(boot, breaks=50, freq=F)
+abline(v=c(ci[1],theta_hat,ci[2]), col="Red")
+curve(sqrt(n)/x*dnorm(sqrt(n)*(log(x)-mu)), 100, 200, add=T, col="Red")
+```
+

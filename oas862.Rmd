@@ -1,0 +1,108 @@
+---
+title: "Exercise 8.6.2"
+author: "monade"
+date: "19 Sep 2015"
+output: html_document
+---
+
+
+Generate data
+```{r}
+set.seed( 37 )
+N <- 500
+gen_data <- function( n )
+{
+  exp( rnorm( n ))
+}
+
+xi <- gen_data( N )
+plot(density(xi))
+```
+
+Evaluate skewness
+```{r}
+skewness <- function( xi )
+{
+  n <- length( xi )
+  mu_hat <- mean( xi )
+  sigma_hat <- sqrt(var(xi))
+  sum((xi-mu_hat)^3)/n/sigma_hat^3
+  mean(xi)
+}
+
+kappa_hat <- skewness( xi )
+kappa_hat
+```
+
+Bootstrap for variance estimation
+```{r}
+B <- 1000 # sample size
+gen_boot <- function( xi )
+{
+  n <- length( xi )
+  boot <- vector( length = B )
+  for (i in 1:B)
+  {
+    s <- sample.int(n, n, replace=TRUE)
+    # plug in estimator here
+    boot[i] <- skewness( xi[s] )
+  }
+  boot
+}
+  
+boot <- gen_boot( xi )
+```
+
+Standard error
+```{r}
+se_hat <- sqrt(var(boot))
+se_hat
+```
+
+Alpha for confidence interval
+```{r}
+alpha <- 1-0.95
+```
+
+Normal confidence interval
+```{r}
+normal_conf_int <- function( kappa_hat, se_hat )
+{
+  kappa_hat + c(-1,1)*qnorm(1-alpha/2)*se_hat  
+}
+normal_int <- normal_conf_int( kappa_hat, se_hat )
+normal_int
+```
+
+Pivotal confidence interval
+```{r}
+pivotal_conf_int <- function( kappa_hat, boot )
+{
+  qs <- quantile(boot, c(1-alpha/2, alpha/2), names=FALSE)
+  2*kappa_hat - qs
+}
+pivotal_int <- pivotal_conf_int( kappa_hat, boot )
+pivotal_int
+```
+
+Percentile confidence interval
+```{r}
+percentile_conf_int <- function( boot )
+{
+  qs <- quantile(boot, c(1-alpha/2, alpha/2), names=FALSE)
+  c(qs[2], qs[1])
+}
+percentile_int <- percentile_conf_int( boot )
+percentile_int
+```
+
+True coverage of confidence intervals
+```{r}
+skews <- rep(0, B)
+for (i in 1:B)
+{
+  skews[i] <- skewness(gen_data( N ))
+}
+quantile(skews, c(alpha/2, 1-alpha/2))
+```
+
