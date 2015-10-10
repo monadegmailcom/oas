@@ -1,0 +1,32 @@
+---
+title: "aos867"
+author: "monade"
+date: "10 Oct 2015"
+output: html_document
+---
+
+$X_1,..,X_n\sim unif(0,1), \hat{\theta}=\max\lbrace X_1, ..., X_n\rbrace, f(x)=nx^{n-1}$
+
+Sample data
+```{r}
+n <- 50
+set.seed(42)
+xi <- runif(n,0,1)
+```
+
+Bootstrap
+```{r}
+B <- 10000
+boot <- rep(0, B)
+for (i in 1:B)
+{
+  s <- sample(xi, n, replace=TRUE)
+  boot[i] <- max(s)
+}
+```
+
+Bootstrap histogram
+```{r}
+hist(boot, breaks=50, freq=FALSE)
+curve(n*x^(n-1), 0.94, 1, add=T, col="Red")
+```
